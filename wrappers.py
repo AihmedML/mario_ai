@@ -4,7 +4,7 @@ import cv2
 from collections import deque
 
 
-class skipframe:
+class SkipFrame:
     def __init__(self, env, skip=4):
         self.env = env
         self.skip = skip
@@ -45,3 +45,23 @@ class GrayScale:
 
     def render(self):
         return self.env.render()
+
+    class FrameStack:
+        def __init__(self, env, stack_size=4):
+            self.env = env
+            self.stack_size = stack_size
+            self.frames = deque(maxlen=stack_size)
+
+        def reset(self):
+            obs = self.env.reset()
+            for i in range(self.stack_size):
+                self.frames.append(obs)
+            return numpy.array(self.frames)
+
+        def step(self, action):
+            obs, reward, done, info = self.env.step(action)
+            self.frames.append(obs)
+            return numpy.array(self.frames), reward, done, info
+
+        def render(self):
+            return self.env.render()
